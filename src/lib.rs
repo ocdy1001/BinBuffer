@@ -146,6 +146,26 @@ impl Bufferable for String{
     }
 }
 
+impl Bufferable for (f64,f64){
+    fn into_buffer(self, vec: &mut Buffer){
+         self.0.into_buffer(vec);
+         self.1.into_buffer(vec);
+    }
+
+    fn copy_into_buffer(&self, vec: &mut Buffer){
+        self.into_buffer(vec);
+    }
+
+    fn from_buffer(vec: &Buffer, iter: &mut usize) -> Option<Self>{
+        if *iter + 16 > vec.len() { return Option::None; }
+        let x = f64::from_buffer(vec, iter);
+        if x.is_none() { return Option::None; }
+        let y = f64::from_buffer(vec, iter);
+        if y.is_none() { return Option::None; }
+        Option::Some((x.unwrap(),y.unwrap()))
+    }
+}
+
 pub fn buffer_append_buffer(vec: &mut Buffer, string: &Buffer){
     for byte in string{
         vec.push(*byte);
@@ -255,5 +275,13 @@ mod tests{
         assert_eq!(y, u16::from_buffer(&buffer, &mut iter).unwrap());
         assert_eq!(z, String::from_buffer(&buffer, &mut iter).unwrap());
         assert_eq!(Option::None, String::from_buffer(&buffer, &mut iter));
+    }
+    #[test]
+    fn test_f64_tuple(){
+        let x = (0.0f64,-12345.4321f64);
+        let mut buffer = Vec::new();
+        x.into_buffer(&mut buffer);
+        let mut iter = 0;
+        assert_eq!(x, <(f64,f64)>::from_buffer(&buffer, &mut iter).unwrap());
     }
 }
