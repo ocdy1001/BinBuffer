@@ -6,7 +6,7 @@ pub type Buffer = Vec<u8>;
 pub trait Bufferable where Self: std::marker::Sized{
     fn into_buffer(self, vec: &mut Buffer);
     fn copy_into_buffer(&self, vec: &mut Buffer);
-    fn from_buffer(vec: &Buffer, iter: &mut u32) -> Option<Self>;
+    fn from_buffer(vec: &Buffer, iter: &mut usize) -> Option<Self>;
 }
 
 impl Bufferable for u32{
@@ -21,8 +21,8 @@ impl Bufferable for u32{
         self.clone().into_buffer(vec);
     }
 
-    fn from_buffer(vec: &Buffer, iter: &mut u32) -> Option<Self>{
-        if (vec.len() as i32) - (*iter as i32) < 4 {return Option::None;}
+    fn from_buffer(vec: &Buffer, iter: &mut usize) -> Option<Self>{
+        if *iter + 4 > vec.len() { return Option::None; }
         let mut val: u32 = 0;
         val += u32::from(vec[(*iter + 0) as usize]) << 24;
         val += u32::from(vec[(*iter + 1) as usize]) << 16;
@@ -43,8 +43,8 @@ impl Bufferable for u16{
         self.clone().into_buffer(vec);
     }
 
-    fn from_buffer(vec: &Buffer, iter: &mut u32) -> Option<Self>{
-        if (vec.len() as i32) - (*iter as i32) < 2 {return Option::None;}
+    fn from_buffer(vec: &Buffer, iter: &mut usize) -> Option<Self>{
+        if *iter + 2 > vec.len() { return Option::None; }
         let mut val: u16 = 0;
         val += u16::from(vec[(*iter + 0) as usize]) << 8;
         val += u16::from(vec[(*iter + 1) as usize]);
@@ -62,8 +62,8 @@ impl Bufferable for u8{
         self.clone().into_buffer(vec);
     }
 
-    fn from_buffer(vec: &Buffer, iter: &mut u32) -> Option<Self>{
-        if (vec.len() as i32) - (*iter as i32) < 1 {return Option::None;}
+    fn from_buffer(vec: &Buffer, iter: &mut usize) -> Option<Self>{
+        if *iter + 1 > vec.len() { return Option::None; }
         let val = vec[*iter as usize];
         *iter += 1;
         Option::Some(val)
