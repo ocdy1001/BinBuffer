@@ -243,6 +243,26 @@ impl Bufferable for (f64,f64){
     }
 }
 
+impl Bufferable for (f64,f64,f64){
+    fn into_buffer(self, buf: &mut Buffer){
+        (self.0,self.1).into_buffer(buf);
+        self.2.into_buffer(buf);
+    }
+
+    fn copy_into_buffer(&self, buf: &mut Buffer){
+        self.into_buffer(buf);
+    }
+
+    fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
+        let xy = <(f64,f64)>::from_buffer(buf);
+        if xy.is_none() { return Option::None; }
+        let z = f64::from_buffer(buf);
+        if z.is_none() { return Option::None; }
+        let (x,y) = xy.unwrap();
+        Option::Some((x,y,z.unwrap()))
+    }
+}
+
 pub fn buffer_append_buffer(vec: &mut Buffer, string: &Buffer){
     for byte in string{
         vec.push(*byte);
@@ -272,6 +292,33 @@ pub fn buffer_read_file(path: &std::path::Path) -> Option<Buffer>{
     let mut vec: Buffer = Vec::new();
     if opened.read_to_end(&mut vec).is_err() {return Option::None;}
     Option::Some(vec)
+}
+
+impl<T: Bufferable + Clone> Bufferable for Vec<T>{
+    fn into_buffer(self, buf: &mut Buffer){
+        let len = self.len() as u64;
+        len.into_buffer(buf);
+        for x in self{
+            x.into_buffer(buf);
+        }
+    }
+
+    fn copy_into_buffer(&self, buf: &mut Buffer){
+        self.clone().into_buffer(buf);
+    }
+
+    fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
+        let len = u64::from_buffer(buf);
+        if len.is_none() { return Option::None; }
+        let len = len.unwrap();
+        let mut vec = Vec::new();
+        for _ in 0..len{
+            let x = T::from_buffer(buf);
+            if x.is_none() { return Option::None; }
+            vec.push(x.unwrap());
+        }
+        Option::Some(vec)
+    }
 }
 
 #[cfg(test)]
@@ -369,5 +416,21 @@ mod tests{
         x.into_buffer(&mut buffer);
         let mut buffer = ReadBuffer::from_raw(buffer);
         assert_eq!(x, <(f64,f64)>::from_buffer(&mut buffer).unwrap());
+    }
+    #[test]
+    fn test_f64_triple(){
+        let x = (0.0f64,-12345.4321f64,9999.0f64);
+        let mut buffer = Vec::new();
+        x.into_buffer(&mut buffer);
+        let mut buffer = ReadBuffer::from_raw(buffer);
+        assert_eq!(x, <(f64,f64,f64)>::from_buffer(&mut buffer).unwrap());
+    }
+    #[test]
+    fn test_vec(){
+        let x = vec![0.0f32,1.0,2.0,3.0,4.0,5.5];
+        let mut buffer = Vec::new();
+        x.copy_into_buffer(&mut buffer);
+        let mut buffer = ReadBuffer::from_raw(buffer);
+        assert_eq!(x, Vec::<f32>::from_buffer(&mut buffer).unwrap());
     }
 }
