@@ -9,6 +9,38 @@ pub trait Bufferable where Self: std::marker::Sized{
     fn from_buffer(vec: &Buffer, iter: &mut usize) -> Option<Self>;
 }
 
+impl Bufferable for u64{
+    fn into_buffer(self, vec: &mut Buffer){
+        vec.push(((self >> 56) & 0xff) as u8);
+        vec.push(((self >> 48) & 0xff) as u8);
+        vec.push(((self >> 40) & 0xff) as u8);
+        vec.push(((self >> 32) & 0xff) as u8);
+        vec.push(((self >> 24) & 0xff) as u8);
+        vec.push(((self >> 16) & 0xff) as u8);
+        vec.push(((self >> 8) & 0xff) as u8);
+        vec.push((self & 0xff) as u8);
+    }
+
+    fn copy_into_buffer(&self, vec: &mut Buffer){
+        self.clone().into_buffer(vec);
+    }
+
+    fn from_buffer(vec: &Buffer, iter: &mut usize) -> Option<Self>{
+        if *iter + 8 > vec.len() { return Option::None; }
+        let mut val: u64 = 0;
+        val += u64::from(vec[(*iter + 0)]) << 56;
+        val += u64::from(vec[(*iter + 1)]) << 48;
+        val += u64::from(vec[(*iter + 2)]) << 40;
+        val += u64::from(vec[(*iter + 3)]) << 32;
+        val += u64::from(vec[(*iter + 4)]) << 24;
+        val += u64::from(vec[(*iter + 5)]) << 16;
+        val += u64::from(vec[(*iter + 6)]) << 8;
+        val += u64::from(vec[(*iter + 7)]);
+        *iter += 8;
+        Option::Some(val)
+    }
+}
+
 impl Bufferable for u32{
     fn into_buffer(self, vec: &mut Buffer){
         vec.push(((self >> 24) & 0xff) as u8);
@@ -124,14 +156,14 @@ impl Bufferable for String{
     fn copy_into_buffer(&self, vec: &mut Buffer){
         let bytes = self.as_bytes();
         let len = bytes.len();
-        (len as u32).into_buffer(vec);
+        (len as u64).into_buffer(vec);
         for b in bytes.iter(){
             vec.push(*b);
         }
     }
 
     fn from_buffer(vec: &Buffer, iter: &mut usize) -> Option<Self>{
-        let len = u32::from_buffer(vec, iter); //TODO: use usize
+        let len = u64::from_buffer(vec, iter);
         if len.is_none() { return Option::None; }
         let len = len.unwrap() as usize;
         if *iter + len > vec.len() { return Option::None; }
@@ -203,6 +235,15 @@ mod tests{
     #[test]
     fn test_true(){
         assert_eq!(true, true);
+    }
+    #[test]
+    fn test_u64(){
+        let x = 81234u64;
+        let mut buffer = Vec::new();
+        x.into_buffer(&mut buffer);
+        let mut iter = 0;
+        assert_eq!(x, u64::from_buffer(&buffer, &mut iter).unwrap());
+        assert_eq!(Option::None, u64::from_buffer(&buffer, &mut iter));
     }
     #[test]
     fn test_u32(){
