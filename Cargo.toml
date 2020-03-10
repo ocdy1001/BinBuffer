@@ -1,8 +1,14 @@
 [package]
 name = "bin_buffer"
 version = "0.1.0"
-authors = ["Cody Bloemhard <cblmhrd@live.nl>"]
+authors = ["Cody Bloemhard <codybloemhard@gmail.com>"]
 edition = "2018"
+description = "A simple library for writing objects to binairy buffers."
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/ocdy1001/bin-buffer"
+keywords = ["io"]
+categories = ["io"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
