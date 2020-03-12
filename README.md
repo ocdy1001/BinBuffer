@@ -2,4 +2,4 @@
 [docs](https://docs.rs/bin_buffer/)
 # BinBuffer
 Simple lightweight crate for translating objects into binairy buffers.
-It supports reading and writing these types: u64, u32, u16, u8, f64, f32, (f64,f64), String.
+It supports reading and writing these types: u64, u32, u16, u8, f64, f32, (f64,f64), String, Vec<Bufferable + Clone>, (U,V), (U,V,W) where U,V,W are Bufferable.
