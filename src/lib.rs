@@ -223,46 +223,6 @@ impl Bufferable for String{
     }
 }
 
-impl Bufferable for (f64,f64){
-    fn into_buffer(self, buf: &mut Buffer){
-         self.0.into_buffer(buf);
-         self.1.into_buffer(buf);
-    }
-
-    fn copy_into_buffer(&self, buf: &mut Buffer){
-        self.into_buffer(buf);
-    }
-
-    fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
-        if buf.iter + 16 > buf.buffer.len() { return Option::None; }
-        let x = f64::from_buffer(buf);
-        if x.is_none() { return Option::None; }
-        let y = f64::from_buffer(buf);
-        if y.is_none() { return Option::None; }
-        Option::Some((x.unwrap(),y.unwrap()))
-    }
-}
-
-impl Bufferable for (f64,f64,f64){
-    fn into_buffer(self, buf: &mut Buffer){
-        (self.0,self.1).into_buffer(buf);
-        self.2.into_buffer(buf);
-    }
-
-    fn copy_into_buffer(&self, buf: &mut Buffer){
-        self.into_buffer(buf);
-    }
-
-    fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
-        let xy = <(f64,f64)>::from_buffer(buf);
-        if xy.is_none() { return Option::None; }
-        let z = f64::from_buffer(buf);
-        if z.is_none() { return Option::None; }
-        let (x,y) = xy.unwrap();
-        Option::Some((x,y,z.unwrap()))
-    }
-}
-
 pub fn buffer_append_buffer(vec: &mut Buffer, string: &Buffer){
     for byte in string{
         vec.push(*byte);
@@ -318,6 +278,48 @@ impl<T: Bufferable + Clone> Bufferable for Vec<T>{
             vec.push(x.unwrap());
         }
         Option::Some(vec)
+    }
+}
+
+impl<U: Bufferable + Clone, V: Bufferable + Clone> Bufferable for (U,V){
+    fn into_buffer(self, buf: &mut Buffer){
+        self.0.into_buffer(buf);
+        self.1.into_buffer(buf);
+    }
+
+    fn copy_into_buffer(&self, buf: &mut Buffer){
+        self.clone().into_buffer(buf);
+    }
+
+    fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
+        let x = if let Some(wx) = U::from_buffer(buf){ wx }
+        else { return Option::None; };
+        let y = if let Some(wy) = V::from_buffer(buf){ wy }
+        else { return Option::None; };
+        Option::Some((x,y))
+    }
+}
+
+impl<U: Bufferable + Clone, V: Bufferable + Clone, W: Bufferable + Clone>
+    Bufferable for (U,V,W){
+    fn into_buffer(self, buf: &mut Buffer){
+        self.0.into_buffer(buf);
+        self.1.into_buffer(buf);
+        self.2.into_buffer(buf);
+    }
+
+    fn copy_into_buffer(&self, buf: &mut Buffer){
+        self.clone().into_buffer(buf);
+    }
+
+    fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
+        let x = if let Some(wx) = U::from_buffer(buf){ wx }
+        else { return Option::None; };
+        let y = if let Some(wy) = V::from_buffer(buf){ wy }
+        else { return Option::None; };
+        let z = if let Some(wz) = W::from_buffer(buf){ wz }
+        else { return Option::None; };
+        Option::Some((x,y,z))
     }
 }
 
