@@ -1,6 +1,7 @@
 #![warn(missing_docs)]
 #![warn(missing_doc_code_examples)]
 
+//! This is a simple crate to read and write binairy data.
 //! # Example:
 //! ```
 //! use bin_buffer::*;
@@ -12,9 +13,9 @@
 //! y.copy_into_buffer(&mut buffer);
 //! z.into_buffer(&mut buffer);
 //! let mut buffer = ReadBuffer::from_raw(buffer);
-//! assert_eq!(x, u16::from_buffer(&mut buffer).unwrap());
-//! assert_eq!(y, String::from_buffer(&mut buffer).unwrap());
-//! assert_eq!(z, <(f64,f64)>::from_buffer(&mut buffer).unwrap());
+//! assert_eq!(Some(x), u16::from_buffer(&mut buffer));
+//! assert_eq!(Some(y), String::from_buffer(&mut buffer));
+//! assert_eq!(Some(z), <(f64,f64)>::from_buffer(&mut buffer));
 //! ```
 
 use std::io::prelude::*;
@@ -56,7 +57,16 @@ pub trait Bufferable where Self: std::marker::Sized{
     /// Read object from buffer
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>;
 }
-
+/// Implements Bufferable for u64.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = 81234u64;
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y = u64::from_buffer(&mut buffer);
+/// ```
 impl Bufferable for u64{
     fn into_buffer(self, vec: &mut Buffer){
         vec.push(((self >> 56) & 0xff) as u8);
@@ -88,7 +98,16 @@ impl Bufferable for u64{
         Option::Some(val)
     }
 }
-
+/// Implements Bufferable for u32.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = 71u32;
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y = u32::from_buffer(&mut buffer);
+/// ```
 impl Bufferable for u32{
     fn into_buffer(self, vec: &mut Buffer){
         vec.push(((self >> 24) & 0xff) as u8);
@@ -112,7 +131,16 @@ impl Bufferable for u32{
         Option::Some(val)
     }
 }
-
+/// Implements Bufferable for u16.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = 31u16;
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y = u16::from_buffer(&mut buffer);
+/// ```
 impl Bufferable for u16{
     fn into_buffer(self, vec: &mut Buffer){
         vec.push(((self >> 8) & 0xff) as u8);
@@ -132,7 +160,16 @@ impl Bufferable for u16{
         Option::Some(val)
     }
 }
-
+/// Implements Bufferable for u8.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = 1u8;
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y = u8::from_buffer(&mut buffer);
+/// ```
 impl Bufferable for u8{
     fn into_buffer(self, vec: &mut Buffer){
         vec.push(self);
@@ -149,7 +186,16 @@ impl Bufferable for u8{
         Option::Some(val)
     }
 }
-
+/// Implements Bufferable for f64.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = 1.001f64;
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y = f64::from_buffer(&mut buffer);
+/// ```
 impl Bufferable for f64{
     fn into_buffer(self, vec: &mut Buffer){
         let bytes = self.to_be_bytes();
@@ -172,7 +218,16 @@ impl Bufferable for f64{
         return Option::Some(f64::from_be_bytes(bytes));
     }
 }
-
+/// Implements Bufferable for f32.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = 1.001f32;
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y = f32::from_buffer(&mut buffer);
+/// ```
 impl Bufferable for f32{
     fn into_buffer(self, vec: &mut Buffer){
         let bytes = self.to_be_bytes();
@@ -195,7 +250,16 @@ impl Bufferable for f32{
         return Option::Some(f32::from_be_bytes(bytes));
     }
 }
-
+/// Implements Bufferable for String.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = String::from("cool and good");
+/// let mut buffer = Vec::new();
+/// x.copy_into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y = String::from_buffer(&mut buffer);
+/// ```
 impl Bufferable for String{
     fn into_buffer(self, vec: &mut Buffer){
         self.copy_into_buffer(vec);
@@ -245,7 +309,7 @@ pub fn buffer_append_buffer(vec: &mut Buffer, string: &Buffer){
 /// ```
 /// use bin_buffer::*;
 /// let buf = vec![0,1,2];
-/// let path = std::path::Path::new("./buffer");
+/// let path = std::path::Path::new("./buffer0.ntbr");
 /// buffer_write_file(&path, &buf);
 /// let res = buffer_read_file(&path);
 /// assert_eq!(res, Option::Some(buf));
@@ -263,7 +327,7 @@ pub fn buffer_write_file(path: &std::path::Path, vec: &Buffer) -> bool{
 /// ```
 /// use bin_buffer::*;
 /// let a = vec![0,1,2];
-/// let path = std::path::Path::new("./buffer");
+/// let path = std::path::Path::new("./buffer1.ntbr");
 /// buffer_write_file(&path, &a);
 /// let b = vec![3,4];
 /// buffer_write_file_append(&path, &b);
@@ -281,7 +345,7 @@ pub fn buffer_write_file_append(path: &std::path::Path, vec: &Buffer) -> bool{
 /// # Example
 /// ```
 /// use bin_buffer::*;
-/// let path = std::path::Path::new("./buffer");
+/// let path = std::path::Path::new("./buffer2.ntbr");
 /// let buffer = vec![0,1,2,3];
 /// buffer_write_file(&path, &buffer);
 /// let read_result = buffer_read_file(&path);
@@ -295,7 +359,16 @@ pub fn buffer_read_file(path: &std::path::Path) -> Option<Buffer>{
     if opened.read_to_end(&mut vec).is_err() {return Option::None;}
     Option::Some(vec)
 }
-
+/// Implements Bufferable for Vec<Bufferable + Clone>
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = vec![0.0f32,1.0,2.0,3.0,4.0,5.5];
+/// let mut buffer = Vec::new();
+/// x.copy_into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y = Vec::<f32>::from_buffer(&mut buffer);
+/// ```
 impl<T: Bufferable + Clone> Bufferable for Vec<T>{
     fn into_buffer(self, buf: &mut Buffer){
         let len = self.len() as u64;
@@ -322,7 +395,16 @@ impl<T: Bufferable + Clone> Bufferable for Vec<T>{
         Option::Some(vec)
     }
 }
-
+/// Implements Bufferable for tuples where all U,V are Bufferable and Clone.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = (0.0f64,-12345.4321f64);
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y =  <(f64,f64)>::from_buffer(&mut buffer);
+/// ```
 impl<U: Bufferable + Clone, V: Bufferable + Clone> Bufferable for (U,V){
     fn into_buffer(self, buf: &mut Buffer){
         self.0.into_buffer(buf);
@@ -341,7 +423,16 @@ impl<U: Bufferable + Clone, V: Bufferable + Clone> Bufferable for (U,V){
         Option::Some((x,y))
     }
 }
-
+/// Implements Bufferable for tuples (U,V,W) where all U,V,W are Bufferable and Clone.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = (0.0f64,-12345.4321f64,9999.0f64);
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y= <(f64,f64,f64)>::from_buffer(&mut buffer);
+/// ```
 impl<U: Bufferable + Clone, V: Bufferable + Clone, W: Bufferable + Clone>
     Bufferable for (U,V,W){
     fn into_buffer(self, buf: &mut Buffer){
@@ -467,7 +558,8 @@ mod tests{
         let mut buffer = Vec::new();
         x.into_buffer(&mut buffer);
         let mut buffer = ReadBuffer::from_raw(buffer);
-        assert_eq!(x, <(f64,f64,f64)>::from_buffer(&mut buffer).unwrap());
+        assert_eq!(Some(x), <(f64,f64,f64)>::from_buffer(&mut buffer));
+        assert_eq!(None, u8::from_buffer(&mut buffer));
     }
     #[test]
     fn test_vec(){
@@ -475,6 +567,7 @@ mod tests{
         let mut buffer = Vec::new();
         x.copy_into_buffer(&mut buffer);
         let mut buffer = ReadBuffer::from_raw(buffer);
-        assert_eq!(x, Vec::<f32>::from_buffer(&mut buffer).unwrap());
+        assert_eq!(Some(x), Vec::<f32>::from_buffer(&mut buffer));
+        assert_eq!(None, u8::from_buffer(&mut buffer));
     }
 }
