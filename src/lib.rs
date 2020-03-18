@@ -1,21 +1,24 @@
+#![warn(missing_docs)]
+#![warn(missing_doc_code_examples)]
+
+//! # Example:
+//! ```
+//! use bin_buffer::*;
+//! let x = 16u16;
+//! let y = String::from("hello");
+//! let z = (0.0001f64,1.1111f64);
+//! let mut buffer = Vec::new();
+//! x.into_buffer(&mut buffer);
+//! y.copy_into_buffer(&mut buffer);
+//! z.into_buffer(&mut buffer);
+//! let mut buffer = ReadBuffer::from_raw(buffer);
+//! assert_eq!(x, u16::from_buffer(&mut buffer).unwrap());
+//! assert_eq!(y, String::from_buffer(&mut buffer).unwrap());
+//! assert_eq!(z, <(f64,f64)>::from_buffer(&mut buffer).unwrap());
+//! ```
+
 use std::io::prelude::*;
 use std::fs::OpenOptions;
-
-/// # Example:
-/// ```
-/// use bin_buffer::*;
-/// let x = 16u16;
-/// let y = String::from("hello");
-/// let z = (0.0001f64,1.1111f64);
-/// let mut buffer = Vec::new();
-/// x.into_buffer(&mut buffer);
-/// y.copy_into_buffer(&mut buffer);
-/// z.into_buffer(&mut buffer);
-/// let mut buffer = ReadBuffer::from_raw(buffer);
-/// assert_eq!(x, u16::from_buffer(&mut buffer).unwrap());
-/// assert_eq!(y, String::from_buffer(&mut buffer).unwrap());
-/// assert_eq!(z, <(f64,f64)>::from_buffer(&mut buffer).unwrap());
-/// ```
 
 /// Buffer: a Vector of bytes
 pub type Buffer = Vec<u8>;
@@ -222,13 +225,31 @@ impl Bufferable for String{
         return Some(res.unwrap());
     }
 }
-
+/// Just copies the content of the second buffer to the end of the first buffer.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let mut buffer = vec![0,1,2,3];
+/// let source = &vec![4,5];
+/// buffer_append_buffer(&mut buffer, source);
+/// assert_eq!(buffer,vec![0,1,2,3,4,5]);
+/// ```
 pub fn buffer_append_buffer(vec: &mut Buffer, string: &Buffer){
     for byte in string{
         vec.push(*byte);
     }
 }
-
+/// Writes a buffer to a file.
+/// Will create a new file if none exists or overwrite otherwise.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let buf = vec![0,1,2];
+/// let path = std::path::Path::new("./buffer");
+/// buffer_write_file(&path, &buf);
+/// let res = buffer_read_file(&path);
+/// assert_eq!(res, Option::Some(buf));
+/// ```
 pub fn buffer_write_file(path: &std::path::Path, vec: &Buffer) -> bool{
     let file = OpenOptions::new().write(true).create(true).truncate(true).open(path);
     if file.is_err() { return false; }
@@ -236,7 +257,19 @@ pub fn buffer_write_file(path: &std::path::Path, vec: &Buffer) -> bool{
     if opened.write_all(&vec).is_err() {return false;}
     true
 }
-
+/// Writes a buffer to the end of a file.
+/// Will create a new file if none exists.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let a = vec![0,1,2];
+/// let path = std::path::Path::new("./buffer");
+/// buffer_write_file(&path, &a);
+/// let b = vec![3,4];
+/// buffer_write_file_append(&path, &b);
+/// let res = buffer_read_file(&path);
+/// assert_eq!(res, Option::Some(vec![0,1,2,3,4]));
+/// ```
 pub fn buffer_write_file_append(path: &std::path::Path, vec: &Buffer) -> bool{
     let file = OpenOptions::new().write(true).create(true).append(true).open(path);
     if file.is_err() { return false; }
@@ -244,7 +277,16 @@ pub fn buffer_write_file_append(path: &std::path::Path, vec: &Buffer) -> bool{
     if opened.write_all(&vec).is_err() {return false;}
     true
 }
-
+/// Reads a buffer from a file.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let path = std::path::Path::new("./buffer");
+/// let buffer = vec![0,1,2,3];
+/// buffer_write_file(&path, &buffer);
+/// let read_result = buffer_read_file(&path);
+/// assert_eq!(read_result, Option::Some(buffer));
+/// ```
 pub fn buffer_read_file(path: &std::path::Path) -> Option<Buffer>{
     let file = OpenOptions::new().read(true).open(path);
     if file.is_err() {return Option::None;}
