@@ -275,18 +275,16 @@ impl Bufferable for String{
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
-        let len = u64::from_buffer(buf);
-        if len.is_none() { return Option::None; }
-        let len = len.unwrap() as usize;
+        let len = if let Some(l) = u64::from_buffer(buf){ l }
+        else { return Option::None; } as usize;
         if buf.iter + len > buf.buffer.len() { return Option::None; }
         let mut bytes = Vec::new();
         for i in 0..len{
             bytes.push(buf.buffer[buf.iter + i]);
         }
         buf.iter += len;
-        let res = String::from_utf8(bytes);
-        if res.is_err() { return Option::None; }
-        return Some(res.unwrap());
+        return if let Ok(r) = String::from_utf8(bytes) { Some(r) }
+        else { return Option::None; };
     }
 }
 /// Just copies the content of the second buffer to the end of the first buffer.
@@ -315,9 +313,10 @@ pub fn buffer_append_buffer(vec: &mut Buffer, string: &Buffer){
 /// assert_eq!(res, Option::Some(buf));
 /// ```
 pub fn buffer_write_file(path: &std::path::Path, vec: &Buffer) -> bool{
-    let file = OpenOptions::new().write(true).create(true).truncate(true).open(path);
-    if file.is_err() { return false; }
-    let mut opened = file.unwrap();
+    let file = if let Ok(f) =
+        OpenOptions::new().write(true).create(true).truncate(true).open(path) { f }
+    else { return false; };
+    let mut opened = file;
     if opened.write_all(&vec).is_err() {return false;}
     true
 }
@@ -335,9 +334,10 @@ pub fn buffer_write_file(path: &std::path::Path, vec: &Buffer) -> bool{
 /// assert_eq!(res, Option::Some(vec![0,1,2,3,4]));
 /// ```
 pub fn buffer_write_file_append(path: &std::path::Path, vec: &Buffer) -> bool{
-    let file = OpenOptions::new().write(true).create(true).append(true).open(path);
-    if file.is_err() { return false; }
-    let mut opened = file.unwrap();
+    let file = if let Ok(f) =
+        OpenOptions::new().write(true).create(true).append(true).open(path) { f }
+    else { return false; };
+    let mut opened = file;
     if opened.write_all(&vec).is_err() {return false;}
     true
 }
@@ -352,11 +352,12 @@ pub fn buffer_write_file_append(path: &std::path::Path, vec: &Buffer) -> bool{
 /// assert_eq!(read_result, Option::Some(buffer));
 /// ```
 pub fn buffer_read_file(path: &std::path::Path) -> Option<Buffer>{
-    let file = OpenOptions::new().read(true).open(path);
-    if file.is_err() {return Option::None;}
-    let mut opened = file.unwrap();
+    let file = if let Ok(f) =
+        OpenOptions::new().read(true).open(path) { f }
+    else { return Option::None; };
+    let mut opened = file;
     let mut vec: Buffer = Vec::new();
-    if opened.read_to_end(&mut vec).is_err() {return Option::None;}
+    if opened.read_to_end(&mut vec).is_err() { return Option::None; }
     Option::Some(vec)
 }
 /// Implements Bufferable for Vec<Bufferable + Clone>
@@ -383,14 +384,14 @@ impl<T: Bufferable + Clone> Bufferable for Vec<T>{
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
-        let len = u64::from_buffer(buf);
-        if len.is_none() { return Option::None; }
-        let len = len.unwrap();
+        let len = if let Some(b) = u64::from_buffer(buf) { b }
+        else { return Option::None; };
+        let len = len;
         let mut vec = Vec::new();
         for _ in 0..len{
-            let x = T::from_buffer(buf);
-            if x.is_none() { return Option::None; }
-            vec.push(x.unwrap());
+            let x = if let Some(y) = T::from_buffer(buf) { y }
+            else { return Option::None; };
+            vec.push(x);
         }
         Option::Some(vec)
     }
