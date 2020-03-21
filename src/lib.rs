@@ -17,7 +17,6 @@
 //! assert_eq!(Some(y), String::from_buffer(&mut buffer));
 //! assert_eq!(Some(z), <(f64,f64)>::from_buffer(&mut buffer));
 //! ```
-#[macro_use]
 extern crate fnrs;
 use fnrs::uworn;
 
