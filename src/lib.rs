@@ -88,7 +88,7 @@ impl Bufferable for u64{
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
         if buf.iter + 8 > buf.buffer.len() { return Option::None; }
         let mut val: u64 = 0;
-        val += u64::from(buf.buffer[(buf.iter + 0)]) << 56;
+        val += u64::from(buf.buffer[(buf.iter    )]) << 56;
         val += u64::from(buf.buffer[(buf.iter + 1)]) << 48;
         val += u64::from(buf.buffer[(buf.iter + 2)]) << 40;
         val += u64::from(buf.buffer[(buf.iter + 3)]) << 32;
@@ -125,7 +125,7 @@ impl Bufferable for u32{
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
         if buf.iter + 4 > buf.buffer.len() { return Option::None; }
         let mut val: u32 = 0;
-        val += u32::from(buf.buffer[(buf.iter + 0)]) << 24;
+        val += u32::from(buf.buffer[(buf.iter    )]) << 24;
         val += u32::from(buf.buffer[(buf.iter + 1)]) << 16;
         val += u32::from(buf.buffer[(buf.iter + 2)]) << 8;
         val += u32::from(buf.buffer[(buf.iter + 3)]);
@@ -156,7 +156,7 @@ impl Bufferable for u16{
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
         if buf.iter + 2 > buf.buffer.len() { return Option::None; }
         let mut val: u16 = 0;
-        val += u16::from(buf.buffer[(buf.iter + 0)]) << 8;
+        val += u16::from(buf.buffer[(buf.iter    )]) << 8;
         val += u16::from(buf.buffer[(buf.iter + 1)]);
         buf.iter += 2;
         Option::Some(val)
@@ -213,11 +213,11 @@ impl Bufferable for f64{
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
         if buf.iter + 8 > buf.buffer.len() { return Option::None; }
         let mut bytes = [0u8; 8];
-        for i in 0..8{
-            bytes[i] = buf.buffer[buf.iter + i];
+        for (i, byte) in bytes.iter_mut().enumerate(){
+            *byte = buf.buffer[buf.iter + i];
         }
         buf.iter += 8;
-        return Option::Some(f64::from_be_bytes(bytes));
+        Option::Some(f64::from_be_bytes(bytes))
     }
 }
 /// Implements Bufferable for f32.
@@ -245,11 +245,11 @@ impl Bufferable for f32{
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
         if buf.iter + 4 > buf.buffer.len() { return Option::None; }
         let mut bytes = [0u8; 4];
-        for i in 0..4{
-            bytes[i] = buf.buffer[buf.iter + i];
+        for (i,byte) in bytes.iter_mut().enumerate(){
+            *byte = buf.buffer[buf.iter + i];
         }
         buf.iter += 4;
-        return Option::Some(f32::from_be_bytes(bytes));
+        Option::Some(f32::from_be_bytes(bytes))
     }
 }
 /// Implements Bufferable for String.
@@ -284,8 +284,8 @@ impl Bufferable for String{
             bytes.push(buf.buffer[buf.iter + i]);
         }
         buf.iter += len;
-        return if let Ok(r) = String::from_utf8(bytes) { Some(r) }
-        else { return Option::None; };
+        if let Ok(r) = String::from_utf8(bytes) { Some(r) }
+        else { Option::None }
     }
 }
 /// Just copies the content of the second buffer to the end of the first buffer.
@@ -297,7 +297,7 @@ impl Bufferable for String{
 /// buffer_append_buffer(&mut buffer, source);
 /// assert_eq!(buffer,vec![0,1,2,3,4,5]);
 /// ```
-pub fn buffer_append_buffer(vec: &mut Buffer, string: &Buffer){
+pub fn buffer_append_buffer(vec: &mut Buffer, string: &[u8]){
     for byte in string{
         vec.push(*byte);
     }
@@ -313,7 +313,7 @@ pub fn buffer_append_buffer(vec: &mut Buffer, string: &Buffer){
 /// let res = buffer_read_file(&path);
 /// assert_eq!(res, Option::Some(buf));
 /// ```
-pub fn buffer_write_file(path: &std::path::Path, vec: &Buffer) -> bool{
+pub fn buffer_write_file(path: &std::path::Path, vec: &[u8]) -> bool{
     let file = if let Ok(f) =
         OpenOptions::new().write(true).create(true).truncate(true).open(path) { f }
     else { return false; };
@@ -334,7 +334,7 @@ pub fn buffer_write_file(path: &std::path::Path, vec: &Buffer) -> bool{
 /// let res = buffer_read_file(&path);
 /// assert_eq!(res, Option::Some(vec![0,1,2,3,4]));
 /// ```
-pub fn buffer_write_file_append(path: &std::path::Path, vec: &Buffer) -> bool{
+pub fn buffer_write_file_append(path: &std::path::Path, vec: &[u8]) -> bool{
     let file = if let Ok(f) =
         OpenOptions::new().write(true).create(true).append(true).open(path) { f }
     else { return false; };
