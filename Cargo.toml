@@ -1,6 +1,6 @@
 [package]
 name = "bin_buffer"
-version = "0.1.8"
+version = "0.1.9"
 authors = ["Cody Bloemhard <codybloemhard@gmail.com>"]
 edition = "2018"
 description = "A simple library for writing objects to binairy buffers."

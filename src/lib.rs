@@ -449,6 +449,37 @@ impl<U: Bufferable + Clone, V: Bufferable + Clone, W: Bufferable + Clone>
         Option::Some((x,y,z))
     }
 }
+/// Implements Bufferable for tuples (U,V,W,X) where all U,V,W,X are Bufferable and Clone.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = (0.064,-12345.4321,9999.0,-999.0);
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y= <(f64,f64,f64,f64)>::from_buffer(&mut buffer);
+/// ```
+impl<U: Bufferable + Clone, V: Bufferable + Clone, W: Bufferable + Clone, X: Bufferable + Clone>
+    Bufferable for (U,V,W,X){
+    fn into_buffer(self, buf: &mut Buffer){
+        self.0.into_buffer(buf);
+        self.1.into_buffer(buf);
+        self.2.into_buffer(buf);
+        self.3.into_buffer(buf);
+    }
+
+    fn copy_into_buffer(&self, buf: &mut Buffer){
+        self.clone().into_buffer(buf);
+    }
+
+    fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
+        let x = uworn!(U::from_buffer(buf));
+        let y = uworn!(V::from_buffer(buf));
+        let z = uworn!(W::from_buffer(buf));
+        let w = uworn!(X::from_buffer(buf));
+        Option::Some((x,y,z,w))
+    }
+}
 
 #[cfg(test)]
 mod tests{
@@ -553,6 +584,15 @@ mod tests{
         x.into_buffer(&mut buffer);
         let mut buffer = ReadBuffer::from_raw(buffer);
         assert_eq!(Some(x), <(f64,f64,f64)>::from_buffer(&mut buffer));
+        assert_eq!(None, u8::from_buffer(&mut buffer));
+    }
+    #[test]
+    fn test_f64_quadruple(){
+        let x = (0.064,-12345.4321,9999.0,-999.0);
+        let mut buffer = Vec::new();
+        x.into_buffer(&mut buffer);
+        let mut buffer = ReadBuffer::from_raw(buffer);
+        assert_eq!(Some(x), <(f64,f64,f64,f64)>::from_buffer(&mut buffer));
         assert_eq!(None, u8::from_buffer(&mut buffer));
     }
     #[test]
