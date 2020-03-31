@@ -17,9 +17,6 @@
 //! assert_eq!(Some(y), String::from_buffer(&mut buffer));
 //! assert_eq!(Some(z), <(f64,f64)>::from_buffer(&mut buffer));
 //! ```
-extern crate fnrs;
-use fnrs::uworn;
-
 use std::io::prelude::*;
 use std::fs::OpenOptions;
 
@@ -277,7 +274,7 @@ impl Bufferable for String{
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
-        let len = uworn!(u64::from_buffer(buf)) as usize;
+        let len = (u64::from_buffer(buf))? as usize;
         if buf.iter + len > buf.buffer.len() { return Option::None; }
         let mut bytes = Vec::new();
         for i in 0..len{
@@ -385,10 +382,10 @@ impl<T: Bufferable + Clone> Bufferable for Vec<T>{
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
-        let len = uworn!(u64::from_buffer(buf));
+        let len = (u64::from_buffer(buf))?;
         let mut vec = Vec::new();
         for _ in 0..len{
-            let x = uworn!(T::from_buffer(buf));
+            let x = (T::from_buffer(buf))?;
             vec.push(x);
         }
         Option::Some(vec)
@@ -415,8 +412,8 @@ impl<U: Bufferable + Clone, V: Bufferable + Clone> Bufferable for (U,V){
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
-        let x = uworn!(U::from_buffer(buf));
-        let y = uworn!(V::from_buffer(buf));
+        let x = (U::from_buffer(buf))?;
+        let y = (V::from_buffer(buf))?;
         Option::Some((x,y))
     }
 }
@@ -443,9 +440,9 @@ impl<U: Bufferable + Clone, V: Bufferable + Clone, W: Bufferable + Clone>
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
-        let x = uworn!(U::from_buffer(buf));
-        let y = uworn!(V::from_buffer(buf));
-        let z = uworn!(W::from_buffer(buf));
+        let x = (U::from_buffer(buf))?;
+        let y = (V::from_buffer(buf))?;
+        let z = (W::from_buffer(buf))?;
         Option::Some((x,y,z))
     }
 }
@@ -473,10 +470,10 @@ impl<U: Bufferable + Clone, V: Bufferable + Clone, W: Bufferable + Clone, X: Buf
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
-        let x = uworn!(U::from_buffer(buf));
-        let y = uworn!(V::from_buffer(buf));
-        let z = uworn!(W::from_buffer(buf));
-        let w = uworn!(X::from_buffer(buf));
+        let x = (U::from_buffer(buf))?;
+        let y = (V::from_buffer(buf))?;
+        let z = (W::from_buffer(buf))?;
+        let w = (X::from_buffer(buf))?;
         Option::Some((x,y,z,w))
     }
 }

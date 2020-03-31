@@ -1,6 +1,6 @@
 [package]
 name = "bin_buffer"
-version = "0.1.9"
+version = "0.1.10"
 authors = ["Cody Bloemhard <codybloemhard@gmail.com>"]
 edition = "2018"
 description = "A simple library for writing objects to binairy buffers."
@@ -13,4 +13,3 @@ categories = ["command-line-utilities", "filesystem", "parsing"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-fnrs = "0.1.4"
