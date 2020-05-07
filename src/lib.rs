@@ -97,6 +97,48 @@ impl Bufferable for u64{
         Option::Some(val)
     }
 }
+/// Implements Bufferable for usize.
+/// Only for 64 bit.
+/// # Example
+/// ```
+/// use bin_buffer::*;
+/// let x = 81234usize;
+/// let mut buffer = Vec::new();
+/// x.into_buffer(&mut buffer);
+/// let mut buffer = ReadBuffer::from_raw(buffer);
+/// let y = usize::from_buffer(&mut buffer);
+/// ```
+impl Bufferable for usize{
+    fn into_buffer(self, vec: &mut Buffer){
+        vec.push(((self >> 56) & 0xff) as u8);
+        vec.push(((self >> 48) & 0xff) as u8);
+        vec.push(((self >> 40) & 0xff) as u8);
+        vec.push(((self >> 32) & 0xff) as u8);
+        vec.push(((self >> 24) & 0xff) as u8);
+        vec.push(((self >> 16) & 0xff) as u8);
+        vec.push(((self >> 8) & 0xff) as u8);
+        vec.push((self & 0xff) as u8);
+    }
+
+    fn copy_into_buffer(&self, vec: &mut Buffer){
+        self.clone().into_buffer(vec);
+    }
+
+    fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
+        if buf.iter + 8 > buf.buffer.len() { return Option::None; }
+        let mut val: usize = 0;
+        val += usize::from(buf.buffer[(buf.iter    )]) << 56;
+        val += usize::from(buf.buffer[(buf.iter + 1)]) << 48;
+        val += usize::from(buf.buffer[(buf.iter + 2)]) << 40;
+        val += usize::from(buf.buffer[(buf.iter + 3)]) << 32;
+        val += usize::from(buf.buffer[(buf.iter + 4)]) << 24;
+        val += usize::from(buf.buffer[(buf.iter + 5)]) << 16;
+        val += usize::from(buf.buffer[(buf.iter + 6)]) << 8;
+        val += usize::from(buf.buffer[(buf.iter + 7)]);
+        buf.iter += 8;
+        Option::Some(val)
+    }
+}
 /// Implements Bufferable for u32.
 /// # Example
 /// ```
