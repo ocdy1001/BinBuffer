@@ -1,4 +1,3 @@
-![Rust](https://github.com/ocdy1001/bin-buffer/workflows/Rust/badge.svg)
 [docs](https://docs.rs/bin_buffer/)
 # BinBuffer
 Simple lightweight crate for translating objects into binairy buffers.

@@ -1,12 +1,12 @@
 [package]
 name = "bin_buffer"
-version = "0.1.11"
+version = "0.1.12"
 authors = ["Cody Bloemhard <codybloemhard@gmail.com>"]
 edition = "2018"
 description = "A simple library for writing objects to binairy buffers."
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/ocdy1001/bin-buffer"
+repository = "https://gitlab.com/codybloemhard/bin-buffer"
 keywords = ["io"]
 categories = ["command-line-utilities", "filesystem", "parsing"]
 
