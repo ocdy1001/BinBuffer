@@ -17,8 +17,11 @@
 //! assert_eq!(Some(y), String::from_buffer(&mut buffer));
 //! assert_eq!(Some(z), <(f64,f64)>::from_buffer(&mut buffer));
 //! ```
-use std::io::prelude::*;
-use std::fs::OpenOptions;
+
+use std::{
+    io::prelude::*,
+    fs::OpenOptions,
+};
 
 /// Buffer: a Vector of bytes
 pub type Buffer = Vec<u8>;
@@ -56,6 +59,7 @@ pub trait Bufferable where Self: std::marker::Sized{
     /// Read object from buffer
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>;
 }
+
 /// Implements Bufferable for u64.
 /// # Example
 /// ```
@@ -79,24 +83,25 @@ impl Bufferable for u64{
     }
 
     fn copy_into_buffer(&self, vec: &mut Buffer){
-        self.clone().into_buffer(vec);
+        (*self).into_buffer(vec);
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
         if buf.iter + 8 > buf.buffer.len() { return Option::None; }
         let mut val: u64 = 0;
-        val += u64::from(buf.buffer[(buf.iter    )]) << 56;
-        val += u64::from(buf.buffer[(buf.iter + 1)]) << 48;
-        val += u64::from(buf.buffer[(buf.iter + 2)]) << 40;
-        val += u64::from(buf.buffer[(buf.iter + 3)]) << 32;
-        val += u64::from(buf.buffer[(buf.iter + 4)]) << 24;
-        val += u64::from(buf.buffer[(buf.iter + 5)]) << 16;
-        val += u64::from(buf.buffer[(buf.iter + 6)]) << 8;
-        val += u64::from(buf.buffer[(buf.iter + 7)]);
+        val += u64::from(buf.buffer[buf.iter    ]) << 56;
+        val += u64::from(buf.buffer[buf.iter + 1]) << 48;
+        val += u64::from(buf.buffer[buf.iter + 2]) << 40;
+        val += u64::from(buf.buffer[buf.iter + 3]) << 32;
+        val += u64::from(buf.buffer[buf.iter + 4]) << 24;
+        val += u64::from(buf.buffer[buf.iter + 5]) << 16;
+        val += u64::from(buf.buffer[buf.iter + 6]) << 8;
+        val += u64::from(buf.buffer[buf.iter + 7]);
         buf.iter += 8;
         Option::Some(val)
     }
 }
+
 /// Implements Bufferable for usize.
 /// Only for 64 bit.
 /// # Example
@@ -121,24 +126,25 @@ impl Bufferable for usize{
     }
 
     fn copy_into_buffer(&self, vec: &mut Buffer){
-        self.clone().into_buffer(vec);
+        (*self).into_buffer(vec);
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
         if buf.iter + 8 > buf.buffer.len() { return Option::None; }
         let mut val: usize = 0;
-        val += usize::from(buf.buffer[(buf.iter    )]) << 56;
-        val += usize::from(buf.buffer[(buf.iter + 1)]) << 48;
-        val += usize::from(buf.buffer[(buf.iter + 2)]) << 40;
-        val += usize::from(buf.buffer[(buf.iter + 3)]) << 32;
-        val += usize::from(buf.buffer[(buf.iter + 4)]) << 24;
-        val += usize::from(buf.buffer[(buf.iter + 5)]) << 16;
-        val += usize::from(buf.buffer[(buf.iter + 6)]) << 8;
-        val += usize::from(buf.buffer[(buf.iter + 7)]);
+        val += usize::from(buf.buffer[buf.iter    ]) << 56;
+        val += usize::from(buf.buffer[buf.iter + 1]) << 48;
+        val += usize::from(buf.buffer[buf.iter + 2]) << 40;
+        val += usize::from(buf.buffer[buf.iter + 3]) << 32;
+        val += usize::from(buf.buffer[buf.iter + 4]) << 24;
+        val += usize::from(buf.buffer[buf.iter + 5]) << 16;
+        val += usize::from(buf.buffer[buf.iter + 6]) << 8;
+        val += usize::from(buf.buffer[buf.iter + 7]);
         buf.iter += 8;
         Option::Some(val)
     }
 }
+
 /// Implements Bufferable for u32.
 /// # Example
 /// ```
@@ -158,20 +164,21 @@ impl Bufferable for u32{
     }
 
     fn copy_into_buffer(&self, vec: &mut Buffer){
-        self.clone().into_buffer(vec);
+        (*self).into_buffer(vec);
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
         if buf.iter + 4 > buf.buffer.len() { return Option::None; }
         let mut val: u32 = 0;
-        val += u32::from(buf.buffer[(buf.iter    )]) << 24;
-        val += u32::from(buf.buffer[(buf.iter + 1)]) << 16;
-        val += u32::from(buf.buffer[(buf.iter + 2)]) << 8;
-        val += u32::from(buf.buffer[(buf.iter + 3)]);
+        val += u32::from(buf.buffer[buf.iter    ]) << 24;
+        val += u32::from(buf.buffer[buf.iter + 1]) << 16;
+        val += u32::from(buf.buffer[buf.iter + 2]) << 8;
+        val += u32::from(buf.buffer[buf.iter + 3]);
         buf.iter += 4;
         Option::Some(val)
     }
 }
+
 /// Implements Bufferable for u16.
 /// # Example
 /// ```
@@ -189,18 +196,19 @@ impl Bufferable for u16{
     }
 
     fn copy_into_buffer(&self, vec: &mut Buffer){
-        self.clone().into_buffer(vec);
+        (*self).into_buffer(vec);
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
         if buf.iter + 2 > buf.buffer.len() { return Option::None; }
         let mut val: u16 = 0;
-        val += u16::from(buf.buffer[(buf.iter    )]) << 8;
-        val += u16::from(buf.buffer[(buf.iter + 1)]);
+        val += u16::from(buf.buffer[buf.iter    ]) << 8;
+        val += u16::from(buf.buffer[buf.iter + 1]);
         buf.iter += 2;
         Option::Some(val)
     }
 }
+
 /// Implements Bufferable for u8.
 /// # Example
 /// ```
@@ -217,7 +225,7 @@ impl Bufferable for u8{
     }
 
     fn copy_into_buffer(&self, vec: &mut Buffer){
-        self.clone().into_buffer(vec);
+        (*self).into_buffer(vec);
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
@@ -227,6 +235,7 @@ impl Bufferable for u8{
         Option::Some(val)
     }
 }
+
 /// Implements Bufferable for f64.
 /// # Example
 /// ```
@@ -246,7 +255,7 @@ impl Bufferable for f64{
     }
 
     fn copy_into_buffer(&self, vec: &mut Buffer){
-        self.clone().into_buffer(vec);
+        (*self).into_buffer(vec);
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
@@ -259,6 +268,7 @@ impl Bufferable for f64{
         Option::Some(f64::from_be_bytes(bytes))
     }
 }
+
 /// Implements Bufferable for f32.
 /// # Example
 /// ```
@@ -278,7 +288,7 @@ impl Bufferable for f32{
     }
 
     fn copy_into_buffer(&self, vec: &mut Buffer){
-        self.clone().into_buffer(vec);
+        (*self).into_buffer(vec);
     }
 
     fn from_buffer(buf: &mut ReadBuffer) -> Option<Self>{
@@ -291,6 +301,7 @@ impl Bufferable for f32{
         Option::Some(f32::from_be_bytes(bytes))
     }
 }
+
 /// Implements Bufferable for String.
 /// # Example
 /// ```
@@ -327,6 +338,7 @@ impl Bufferable for String{
         else { Option::None }
     }
 }
+
 /// Just copies the content of the second buffer to the end of the first buffer.
 /// # Example
 /// ```
@@ -341,6 +353,7 @@ pub fn buffer_append_buffer(vec: &mut Buffer, string: &[u8]){
         vec.push(*byte);
     }
 }
+
 /// Writes a buffer to a file.
 /// Will create a new file if none exists or overwrite otherwise.
 /// # Example
@@ -357,9 +370,10 @@ pub fn buffer_write_file(path: &std::path::Path, vec: &[u8]) -> bool{
         OpenOptions::new().write(true).create(true).truncate(true).open(path) { f }
     else { return false; };
     let mut opened = file;
-    if opened.write_all(&vec).is_err() {return false;}
+    if opened.write_all(vec).is_err() {return false;}
     true
 }
+
 /// Writes a buffer to the end of a file.
 /// Will create a new file if none exists.
 /// # Example
@@ -375,12 +389,13 @@ pub fn buffer_write_file(path: &std::path::Path, vec: &[u8]) -> bool{
 /// ```
 pub fn buffer_write_file_append(path: &std::path::Path, vec: &[u8]) -> bool{
     let file = if let Ok(f) =
-        OpenOptions::new().write(true).create(true).append(true).open(path) { f }
+        OpenOptions::new().create(true).append(true).open(path) { f }
     else { return false; };
     let mut opened = file;
-    if opened.write_all(&vec).is_err() {return false;}
+    if opened.write_all(vec).is_err() {return false;}
     true
 }
+
 /// Reads a buffer from a file.
 /// # Example
 /// ```
@@ -400,6 +415,7 @@ pub fn buffer_read_file(path: &std::path::Path) -> Option<Buffer>{
     if opened.read_to_end(&mut vec).is_err() { return Option::None; }
     Option::Some(vec)
 }
+
 /// Implements Bufferable for Vec<Bufferable + Clone>
 /// # Example
 /// ```
@@ -433,6 +449,7 @@ impl<T: Bufferable + Clone> Bufferable for Vec<T>{
         Option::Some(vec)
     }
 }
+
 /// Implements Bufferable for tuples where all U,V are Bufferable and Clone.
 /// # Example
 /// ```
@@ -459,6 +476,7 @@ impl<U: Bufferable + Clone, V: Bufferable + Clone> Bufferable for (U,V){
         Option::Some((x,y))
     }
 }
+
 /// Implements Bufferable for tuples (U,V,W) where all U,V,W are Bufferable and Clone.
 /// # Example
 /// ```
@@ -488,6 +506,7 @@ impl<U: Bufferable + Clone, V: Bufferable + Clone, W: Bufferable + Clone>
         Option::Some((x,y,z))
     }
 }
+
 /// Implements Bufferable for tuples (U,V,W,X) where all U,V,W,X are Bufferable and Clone.
 /// # Example
 /// ```
